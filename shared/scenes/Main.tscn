@@ -1,0 +1,172 @@
+[gd_scene load_steps=3 format=3 uid="uid://ducmiml2jvsdp"]
+
+[ext_resource type="Script" path="res://shared/scripts/Main.cs" id="1_ylufo"]
+[ext_resource type="PackedScene" uid="uid://ddq88xtscoqp6" path="res://shared/scenes/ui/PeersUI.tscn" id="2_ftvia"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_ylufo")
+
+[node name="startmp" type="Button" parent="."]
+offset_left = 18.0
+offset_top = 373.0
+offset_right = 261.0
+offset_bottom = 445.0
+text = "Start Hosted Game!"
+
+[node name="join" type="Button" parent="."]
+offset_left = 208.0
+offset_top = 26.0
+offset_right = 369.0
+offset_bottom = 93.0
+text = "JoinToID"
+
+[node name="steamid" type="TextEdit" parent="."]
+offset_left = 18.0
+offset_top = 42.0
+offset_right = 198.0
+offset_bottom = 89.0
+text = "76561197995727296"
+
+[node name="invite" type="Button" parent="."]
+offset_left = 24.0
+offset_top = 291.0
+offset_right = 257.0
+offset_bottom = 366.0
+text = "Invite Friend"
+
+[node name="startsp" type="Button" parent="."]
+offset_left = 268.0
+offset_top = 269.0
+offset_right = 492.0
+offset_bottom = 308.0
+text = "Start Singleplayer"
+
+[node name="host" type="Button" parent="."]
+offset_left = 22.0
+offset_top = 216.0
+offset_right = 257.0
+offset_bottom = 285.0
+text = "Start Online Server"
+
+[node name="players" parent="." instance=ExtResource("2_ftvia")]
+
+[node name="chat" type="Panel" parent="."]
+offset_left = 506.0
+offset_top = 157.0
+offset_right = 1097.0
+offset_bottom = 609.0
+
+[node name="text" type="TextEdit" parent="chat"]
+layout_mode = 2
+offset_left = 14.0
+offset_top = 385.0
+offset_right = 475.0
+offset_bottom = 429.0
+
+[node name="send" type="Button" parent="chat"]
+layout_mode = 0
+offset_left = 490.0
+offset_top = 372.0
+offset_right = 572.0
+offset_bottom = 432.0
+text = "Send"
+
+[node name="chatoutput" type="Panel" parent="chat"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 16.0
+offset_right = 569.0
+offset_bottom = 362.0
+
+[node name="chatoutput" type="ScrollContainer" parent="chat/chatoutput"]
+layout_mode = 2
+offset_right = 555.0
+offset_bottom = 344.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="chatoutput" type="VBoxContainer" parent="chat/chatoutput/chatoutput"]
+layout_mode = 2
+
+[node name="statuslabel" type="Label" parent="."]
+offset_left = 27.0
+offset_top = 187.0
+offset_right = 149.0
+offset_bottom = 210.0
+text = "Current Status: "
+
+[node name="status" type="Label" parent="."]
+offset_left = 157.0
+offset_top = 188.0
+offset_right = 278.0
+offset_bottom = 211.0
+text = "Internal Server Offline"
+
+[node name="statuslabel2" type="Label" parent="."]
+offset_left = 27.0
+offset_top = 132.0
+offset_right = 149.0
+offset_bottom = 155.0
+text = "Steam Status: "
+
+[node name="steamstatus" type="Label" parent="."]
+offset_left = 152.0
+offset_top = 133.0
+offset_right = 273.0
+offset_bottom = 156.0
+text = "Not Joinable"
+
+[node name="host2" type="Button" parent="."]
+offset_left = 269.0
+offset_top = 222.0
+offset_right = 493.0
+offset_bottom = 265.0
+text = "Start Offline/Internal Server"
+
+[node name="leave" type="Button" parent="."]
+offset_left = 23.0
+offset_top = 578.0
+offset_right = 196.0
+offset_bottom = 627.0
+text = "Leave Server"
+
+[node name="close" type="Button" parent="."]
+offset_left = 214.0
+offset_top = 577.0
+offset_right = 387.0
+offset_bottom = 626.0
+text = "Close Server"
+
+[node name="broken" type="Panel" parent="."]
+offset_left = 264.0
+offset_top = 215.0
+offset_right = 501.0
+offset_bottom = 320.0
+
+[node name="Label" type="Label" parent="broken"]
+layout_mode = 0
+offset_left = 27.0
+offset_top = 22.0
+offset_right = 224.0
+offset_bottom = 77.0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_font_sizes/font_size = 40
+text = "BROKEN :)"
+
+[node name="broken2" type="Panel" parent="."]
+offset_left = 440.0
+offset_top = 10.0
+offset_right = 1144.0
+offset_bottom = 154.0
+
+[node name="Label" type="Label" parent="broken2"]
+layout_mode = 0
+offset_left = 193.0
+offset_top = 29.0
+offset_right = 488.0
+offset_bottom = 112.0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_font_sizes/font_size = 60
+text = "BROKEN :)"
+
+[connection signal="pressed" from="chat/send" to="." method="onSendPressed"]

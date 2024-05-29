@@ -1,0 +1,73 @@
+[gd_scene load_steps=2 format=3 uid="uid://ddq88xtscoqp6"]
+
+[ext_resource type="Script" path="res://shared/scripts/ui/PeersUI.cs" id="1_3d17p"]
+
+[node name="players" type="PanelContainer"]
+offset_left = 476.0
+offset_top = 31.0
+offset_right = 1128.0
+offset_bottom = 139.0
+script = ExtResource("1_3d17p")
+
+[node name="players" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="player1" type="MarginContainer" parent="players"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="player1" type="VBoxContainer" parent="players/player1"]
+layout_mode = 2
+
+[node name="player1label" type="Label" parent="players/player1/player1"]
+layout_mode = 2
+text = "Player 1"
+horizontal_alignment = 1
+
+[node name="player1avatar" type="Panel" parent="players/player1/player1"]
+layout_mode = 2
+
+[node name="player2" type="MarginContainer" parent="players"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="player2" type="VBoxContainer" parent="players/player2"]
+layout_mode = 2
+
+[node name="player2label" type="Label" parent="players/player2/player2"]
+layout_mode = 2
+text = "Player 2"
+horizontal_alignment = 1
+
+[node name="player2avatar" type="Panel" parent="players/player2/player2"]
+layout_mode = 2
+
+[node name="player3" type="MarginContainer" parent="players"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="player3" type="VBoxContainer" parent="players/player3"]
+layout_mode = 2
+
+[node name="player3label" type="Label" parent="players/player3/player3"]
+layout_mode = 2
+text = "Player 3"
+horizontal_alignment = 1
+
+[node name="player3avatar" type="Panel" parent="players/player3/player3"]
+layout_mode = 2
+
+[node name="player4" type="MarginContainer" parent="players"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="player4" type="VBoxContainer" parent="players/player4"]
+layout_mode = 2
+
+[node name="player4label" type="Label" parent="players/player4/player4"]
+layout_mode = 2
+text = "Player 4"
+horizontal_alignment = 1
+
+[node name="player4avatar" type="Panel" parent="players/player4/player4"]
+layout_mode = 2

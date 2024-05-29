@@ -1,0 +1,22 @@
+﻿<Project Sdk="Godot.NET.Sdk/4.2.2">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>AnyCPU;x64</Platforms>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Steamworks.NET">
+      <HintPath>bin\x64\Windows\Steamworks.NET.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shared\proto\NetworkingProto.proto" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.26.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="server\scripts\networking\" />
+  </ItemGroup>
+</Project>
