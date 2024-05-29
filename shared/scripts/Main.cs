@@ -7,10 +7,10 @@ public partial class Main : Node
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-        Global.networkInterface.ChatMessageEvent += onChatMessage;
-		Global.networkInterface.ServerStartedEvent += onServerStarted;
-		Global.networkInterface.JoinedServerEvent += onJoinedServer;
-        Global.networkInterface.AdminCommandEvent += onAdminCommandEvent;
+        Global.clientNetworkInterface.ChatMessageEvent += onChatMessage;
+		Global.serverNetworkInterface.ServerStartedEvent += onServerStarted;
+		Global.clientNetworkInterface.JoinedServerEvent += onJoinedServer;
+        Global.clientNetworkInterface.AdminCommandEvent += onAdminCommandEvent;
 		GetNode<Button>("host").Pressed += onStartOnlineServerPressed;
         GetNode<Button>("host2").Pressed += onStartOfflineServerPressed;
         GetNode<Button>("join").Pressed += onJoinServerPressed;
@@ -27,12 +27,12 @@ public partial class Main : Node
 
     private void onCloseServerPressed()
     {
-        Global.networkInterface.CloseServer();
+        Global.serverNetworkInterface.CloseServer();
     }
 
     private void onLeaveServerPressed()
     {
-        Global.networkInterface.LeaveServer();
+        Global.clientNetworkInterface.LeaveServer();
     }
 
     private void onAdminCommandEvent(AdminPacket adminPacket)
@@ -49,7 +49,7 @@ public partial class Main : Node
 
     private void onStartOfflineServerPressed()
     {
-        Global.networkInterface.StartServer(9999,false);
+        Global.serverNetworkInterface.StartServer(0,false);
     }
 
     private void onJoinedServer(ulong serverID)
@@ -57,12 +57,12 @@ public partial class Main : Node
 		GetNode<Button>("join").Disabled = true;
         GetNode<Button>("host").Disabled = true;
 
-        if (Global.networkInterface.isJoinable)
+        if (Global.clientNetworkInterface.isJoinable)
 		{
             GetNode<Label>("steamstatus").Text = "Joinable";
         }
 
-		if (Global.networkInterface.isServer)
+		if (Global.isServer)
 		{
             GetNode<Label>("status").Text = "Internal Server Online";
             GetNode<Button>("startmp").Disabled = false;
@@ -93,7 +93,7 @@ public partial class Main : Node
 		AdminPacket adminPacket = new AdminPacket();
 		adminPacket.Command = "startgame";
 		adminPacket.Sender = NetworkUtils.GetSelfSteamID();
-		Global.networkInterface.BroadcastMessage(adminPacket, (ushort)NetworkUtils.NetworkingLanes.LANE_ADMIN);
+		Global.serverNetworkInterface.BroadcastMessage(adminPacket, (ushort)NetworkUtils.NetworkingLanes.LANE_ADMIN);
     }
 
     private void onChatMessage(ChatPacket chatPacket)
@@ -116,24 +116,24 @@ public partial class Main : Node
 	public void onJoinServerPressed()
 	{
 		ulong serverID = ulong.Parse(GetNode<TextEdit>("steamid").Text);
-		Global.networkInterface.ConnectToRemoteServer(serverID);
+		Global.clientNetworkInterface.ConnectToRemoteServer(serverID);
 	}
 
 	public void onStartOnlineServerPressed()
 	{
-		Global.networkInterface.StartServer();
+		Global.serverNetworkInterface.StartServer();
 	}
 
 	public void onInviteFriendPressed()
 	{
-		SteamFriends.ActivateGameOverlayInviteDialogConnectString(Global.networkInterface.serverID.ToString());
+		SteamFriends.ActivateGameOverlayInviteDialogConnectString(Global.clientNetworkInterface.serverID.ToString());
 	}
 
 	public void onSendPressed()
 	{
 		string text = GetNode<TextEdit>("chat/text").Text;
 		GetNode<TextEdit>("chat/text").Text = "";
-		Global.networkInterface.SendChatMessage(text);
+		Global.clientNetworkInterface.SendChatMessage(text);
 
     }
 }

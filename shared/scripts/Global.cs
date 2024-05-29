@@ -5,6 +5,7 @@ using Steamworks;
 public partial class Global : Node
 {
     //state bools
+    public static bool isServer = false;
 	public static bool isServerStarted = false;
 	public static bool isOffline = false;
 	public static bool enableDebugOutput = true;
@@ -14,7 +15,8 @@ public partial class Global : Node
     //Pointers to scenetree nodes (set in _ready)
 	public static Global instance;
 	public static Main main;
-    public static NetworkInterface networkInterface;
+    public static ClientNetworkInterface clientNetworkInterface;
+    public static ServerNetworkInterface serverNetworkInterface;
 
     //Steam vars
 	public static uint appID = 480;
@@ -29,10 +31,11 @@ public partial class Global : Node
         LinkNodes();
 		SteamInit(true);
         CheckLaunchOptions();
-        networkInterface = new NetworkInterface();
-        //networkInterface.StartServer();
-        AddChild(networkInterface);
-	}
+        clientNetworkInterface = new ClientNetworkInterface();
+        serverNetworkInterface = new ServerNetworkInterface();
+        AddChild(clientNetworkInterface);
+        AddChild(serverNetworkInterface);
+    }
 
     private void CheckLaunchOptions()
     {
@@ -42,6 +45,26 @@ public partial class Global : Node
 
     }
 
+    public void EstablishLoopbackConnection(bool fakeNetwork = false)
+    {
+        SteamNetworkingIdentity id1 = new SteamNetworkingIdentity();
+        SteamNetworkingIdentity id2 = new SteamNetworkingIdentity();
+        id1.SetSteamID64(NetworkUtils.GetSelfSteamID());
+        id2.SetSteamID64(NetworkUtils.GetSelfSteamID());
+        clientNetworkInterface.serverID = NetworkUtils.GetSelfSteamID();
+        SteamNetworkingSockets.CreateSocketPair(out HSteamNetConnection ServerToClient, out HSteamNetConnection ClientToServer, fakeNetwork, ref id1, ref id2);
+        EstablishLoopbackConnection(ServerToClient, ClientToServer);
+    }
+
+    public void EstablishLoopbackConnection(HSteamNetConnection serverConnectionToLocalClient, HSteamNetConnection clientConnectionToLocalServer)
+    {
+        NetworkUtils.ConfigureConnectionLanes(clientConnectionToLocalServer);
+        NetworkUtils.ConfigureConnectionLanes(serverConnectionToLocalClient);
+        clientNetworkInterface.connectionToServer = clientConnectionToLocalServer;
+        serverNetworkInterface.connectionsToClients.Add(serverConnectionToLocalClient);
+        Global.PrintDebug("Added local client to connection list.", true);
+        Global.PrintDebug("Set local server as remote server");
+    }
     public override void _Process(double delta)
     {
 		if (isSteamRunning)

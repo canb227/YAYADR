@@ -6,9 +6,9 @@ public partial class PeersUI : PanelContainer
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-        Global.networkInterface.PlayerJoinEvent += onPlayerJoinEvent;
-        Global.networkInterface.PeersUpdatedEvent += onPeersUpdatedEvent;
-        Global.networkInterface.JoinedServerEvent += onJoinedServerEvent;
+        Global.clientNetworkInterface.PlayerJoinEvent += onPlayerJoinEvent;
+        Global.clientNetworkInterface.PeersUpdatedEvent += onPeersUpdatedEvent;
+        Global.clientNetworkInterface.JoinedServerEvent += onJoinedServerEvent;
 	}
 
     private void onJoinedServerEvent(ulong serverID)
