@@ -180,7 +180,10 @@ public partial class ServerNetworkInterface : Node
 
             //Collect up to nMaxMessages that are waiting in the queue on the connection to the server, and load them up into our preallocated message array
             int numMessages = SteamNetworkingSockets.ReceiveMessagesOnConnection(connection, messages, nMaxMessagesReceivedPerFrame);
-
+            if (numMessages == -1)
+            {
+                Global.PrintCriticalError("INVALID CONNECTION HANDLE TO SERVER");
+            }
             //For each message, send it off to further processing
             for (int i = 0; i < numMessages; i++)
             {

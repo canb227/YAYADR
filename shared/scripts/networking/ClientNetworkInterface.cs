@@ -77,7 +77,7 @@ public partial class ClientNetworkInterface : Node
         connectionToServer = ConnectP2P(ref serverID, 0, 0, null);
         this.serverID = serverSteamID;
         NetworkUtils.ConfigureConnectionLanes(connectionToServer);
-
+        isConnected = true;
     }
 
 
@@ -102,11 +102,13 @@ public partial class ClientNetworkInterface : Node
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_FindingRoute:
                 break;
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected:
+                /*
                 SteamFriends.SetRichPresence("connect", cID.ToString());
                 isJoinable = true;
                 isConnected = true;
                 JoinedServerEvent.Invoke(cID);
                 Global.PrintDebug("Connected to remote server. Host Steam ID: " + cID);
+                */
                 break;
             case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ClosedByPeer:
                 break;
@@ -133,12 +135,16 @@ public partial class ClientNetworkInterface : Node
 
     public override void _Process(double delta)
     {
-
+        if (!isConnected) { return; }
         //Create and allocate memory for an array of pointers
         IntPtr[] messages = new IntPtr[nMaxMessagesReceivedPerFrame];
 
         //Collect up to nMaxMessages that are waiting in the queue on the connection to the server, and load them up into our preallocated message array
-        int numMessages = SteamNetworkingSockets.ReceiveMessagesOnConnection(connectionToServer, messages, nMaxMessagesReceivedPerFrame);
+        int numMessages = ReceiveMessagesOnConnection(connectionToServer, messages, nMaxMessagesReceivedPerFrame);
+        if (numMessages == -1)
+        {
+            Global.PrintCriticalError("INVALID CONNECTION HANDLE TO SERVER");
+        }
         //Global.PrintDebug("Checking for msgs from server");
         //For each message, send it off to further processing
         for (int i = 0; i < numMessages; i++)
