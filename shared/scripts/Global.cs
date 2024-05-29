@@ -28,13 +28,13 @@ public partial class Global : Node
 
     public override void _Ready()
 	{
+        instance = this;
         LinkNodes();
 		SteamInit(true);
         CheckLaunchOptions();
         clientNetworkInterface = new ClientNetworkInterface();
-        serverNetworkInterface = new ServerNetworkInterface();
+
         AddChild(clientNetworkInterface);
-        AddChild(serverNetworkInterface);
     }
 
     private void CheckLaunchOptions()
@@ -44,9 +44,16 @@ public partial class Global : Node
         Global.PrintDebug("Checking Steam Launch URL cmdline: " + cmdLine);
 
     }
+    public static void StartServer()
+    {
+        serverNetworkInterface = new ServerNetworkInterface();
 
+        instance.AddChild(serverNetworkInterface);
+        serverNetworkInterface.StartServer();
+    }
     public void EstablishLoopbackConnection(bool fakeNetwork = false)
     {
+
         SteamNetworkingIdentity id1 = new SteamNetworkingIdentity();
         SteamNetworkingIdentity id2 = new SteamNetworkingIdentity();
         id1.SetSteamID64(NetworkUtils.GetSelfSteamID());

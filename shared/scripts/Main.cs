@@ -8,7 +8,7 @@ public partial class Main : Node
 	public override void _Ready()
 	{
         Global.clientNetworkInterface.ChatMessageEvent += onChatMessage;
-		Global.serverNetworkInterface.ServerStartedEvent += onServerStarted;
+        ServerNetworkInterface.ServerStartedEvent += onServerStarted;
 		Global.clientNetworkInterface.JoinedServerEvent += onJoinedServer;
         Global.clientNetworkInterface.AdminCommandEvent += onAdminCommandEvent;
 		GetNode<Button>("host").Pressed += onStartOnlineServerPressed;
@@ -121,7 +121,7 @@ public partial class Main : Node
 
 	public void onStartOnlineServerPressed()
 	{
-		Global.serverNetworkInterface.StartServer();
+		Global.StartServer();
 	}
 
 	public void onInviteFriendPressed()

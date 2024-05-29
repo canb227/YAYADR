@@ -36,17 +36,14 @@ public partial class ServerNetworkInterface : Node
     public delegate void PlayerLeaveEventHandler(ulong steamID);
     public event PlayerLeaveEventHandler PlayerLeaveEvent;
 
-    public delegate void JoinedServerEventHandler(ulong serverID);
-    public event JoinedServerEventHandler JoinedServerEvent;
+
 
     public delegate void PeersUpdatedEventHandler(ulong[] peers);
     public event PeersUpdatedEventHandler PeersUpdatedEvent;
 
-    public delegate void LeftServerEventHandler();
-    public event LeftServerEventHandler LeftServerEvent;
 
     public delegate void ServerStartedEventHandler();
-    public event ServerStartedEventHandler ServerStartedEvent;
+    public static event ServerStartedEventHandler ServerStartedEvent;
 
     public delegate void ServerStoppedEventHandler();
     public event ServerStoppedEventHandler ServerStoppedEvent;
@@ -87,7 +84,6 @@ public partial class ServerNetworkInterface : Node
         Global.instance.EstablishLoopbackConnection();
         isConnected = true;
         ServerStartedEvent.Invoke();
-        JoinedServerEvent.Invoke(Global.steamID);
         Global.PrintDebug("Internal server and loopback connection setup complete. Ready to start game.", true);
     }
 
