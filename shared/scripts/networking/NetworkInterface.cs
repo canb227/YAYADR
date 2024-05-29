@@ -86,7 +86,7 @@ public partial class NetworkInterface : Node
     }
 
 
-    public void StartServer(int port = 9999, bool online = true)
+    public void StartServer(int port = 0, bool online = true)
     {
         isServer = true;
         if (online)
@@ -111,10 +111,9 @@ public partial class NetworkInterface : Node
         Global.PrintDebug("Attempting join remote server with ID: " + serverSteamID);
         SteamNetworkingIdentity serverID = new SteamNetworkingIdentity();
         serverID.SetSteamID64(serverSteamID);
-        HSteamNetConnection connectionToServer = ConnectP2P(ref serverID, 0, 0, null);
-        this.connectionToServer = connectionToServer;
+        connectionToServer = ConnectP2P(ref serverID, 0, 0, null);
         this.serverID = serverSteamID;
-        NetworkUtils.ConfigureConnectionLanes(this.connectionToServer);
+        NetworkUtils.ConfigureConnectionLanes(connectionToServer);
 
     }
 
@@ -197,6 +196,7 @@ public partial class NetworkInterface : Node
                     {
                         Global.PrintDebug("Client # " + cID + " attempting connection, accepting request.",true);
                         SteamNetworkingSockets.AcceptConnection(param.m_hConn);
+                        Global.PrintDebug(param.m_hConn.ToString());
                     }
                     break;
                 case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_FindingRoute:
@@ -212,7 +212,7 @@ public partial class NetworkInterface : Node
                     SendSteamMessage(param.m_hConn, _handshakePacket, (ushort)NetworkUtils.NetworkingLanes.LANE_HANDSHAKE, NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle);
 
                     connectionsToClients.Add(cID, param.m_hConn);
-
+                    Global.PrintDebug(param.m_hConn.ToString());
                     _handshakePacket = new HandshakePacket();
                     _handshakePacket.SentTimestamp = Time.GetUnixTimeFromSystem();
                     _handshakePacket.Sender = NetworkUtils.GetSelfSteamID();
@@ -328,6 +328,7 @@ public partial class NetworkInterface : Node
         for (int i = 0; i < numMessages; i++)
         {
             if (messages[i] == IntPtr.Zero) { continue; } //Sanity check. 
+            Global.PrintDebug("Hep,I got a message from the server.");
             SteamNetworkingMessage_t steamMsg = SteamNetworkingMessage_t.FromIntPtr(messages[i]);
             switch (steamMsg.m_idxLane)
             {
@@ -400,7 +401,7 @@ public partial class NetworkInterface : Node
 
     public bool SendSteamMessage(HSteamNetConnection sendTo, IMessage message, ushort lane, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
     {
-        Global.PrintDebug("Sending SteamMessage to client.",true);
+        Global.PrintDebug("Sending SteamMessage to client: " + sendTo.ToString(),true);
         var msgPtrsToSend = new IntPtr[] { IntPtr.Zero };
         var ptr = IntPtr.Zero;
         try
