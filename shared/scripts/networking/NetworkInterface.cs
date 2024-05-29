@@ -21,7 +21,7 @@ public partial class NetworkInterface : Node
 
     //Networking Vars
     public HSteamNetConnection connectionToServer = new HSteamNetConnection();
-    public Dictionary<ulong,HSteamNetConnection> connectionsToClients = new Dictionary<ulong, HSteamNetConnection>();
+    public List<HSteamNetConnection> connectionsToClients = new List<HSteamNetConnection>();
     public List<ulong> peers = new List<ulong>();
     public HSteamListenSocket listenSocket;
     public ulong serverID = 0;
@@ -133,7 +133,7 @@ public partial class NetworkInterface : Node
         NetworkUtils.ConfigureConnectionLanes(clientConnectionToLocalServer);
         NetworkUtils.ConfigureConnectionLanes(serverConnectionToLocalClient);
         connectionToServer = clientConnectionToLocalServer;
-        connectionsToClients.Add(NetworkUtils.getConnectionRemoteID(serverConnectionToLocalClient),serverConnectionToLocalClient);
+        connectionsToClients.Add(serverConnectionToLocalClient);
         Global.PrintDebug("Added local client to connection list.", true);
         Global.PrintDebug("Set local server as remote server");
     }
@@ -195,8 +195,9 @@ public partial class NetworkInterface : Node
                     if (acceptAllConnections || ValidateJoinAttempt(param))
                     {
                         Global.PrintDebug("Client # " + cID + " attempting connection, accepting request.",true);
-                        SteamNetworkingSockets.AcceptConnection(param.m_hConn);
-                        Global.PrintDebug(param.m_hConn.ToString());
+                        Global.PrintDebug(SteamNetworkingSockets.AcceptConnection(param.m_hConn).ToString());
+
+
                     }
                     break;
                 case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_FindingRoute:
@@ -208,10 +209,11 @@ public partial class NetworkInterface : Node
                     _handshakePacket = new HandshakePacket();
                     _handshakePacket.SentTimestamp = Time.GetUnixTimeFromSystem();
                     _handshakePacket.Sender = NetworkUtils.GetSelfSteamID();
-                    _handshakePacket.Peers.AddRange(connectionsToClients.Keys);
+                    //_handshakePacket.Peers.AddRange(connectionsToClients.Keys);
                     SendSteamMessage(param.m_hConn, _handshakePacket, (ushort)NetworkUtils.NetworkingLanes.LANE_HANDSHAKE, NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle);
 
-                    connectionsToClients.Add(cID, param.m_hConn);
+                    connectionsToClients.Add(param.m_hConn);
+
                     Global.PrintDebug(param.m_hConn.ToString());
                     _handshakePacket = new HandshakePacket();
                     _handshakePacket.SentTimestamp = Time.GetUnixTimeFromSystem();
@@ -222,7 +224,7 @@ public partial class NetworkInterface : Node
 
                 case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ClosedByPeer:
                     Global.PrintDebug("Client # " + cID + " disconnected.", true);
-                    connectionsToClients.Remove(cID);
+                    connectionsToClients.Remove(param.m_hConn);
                     _handshakePacket = new HandshakePacket();
                     _handshakePacket.SentTimestamp = Time.GetUnixTimeFromSystem();
                     _handshakePacket.Sender = NetworkUtils.GetSelfSteamID();
@@ -271,7 +273,7 @@ public partial class NetworkInterface : Node
 
     private void ProcessPacketsFromClients()
     {
-        foreach (HSteamNetConnection connection in connectionsToClients.Values)
+        foreach (HSteamNetConnection connection in connectionsToClients)
         {
             //Create and allocate memory for an array of pointers
             IntPtr[] messages = new IntPtr[nMaxMessagesReceivedPerFrame];
@@ -323,7 +325,7 @@ public partial class NetworkInterface : Node
 
         //Collect up to nMaxMessages that are waiting in the queue on the connection to the server, and load them up into our preallocated message array
         int numMessages = SteamNetworkingSockets.ReceiveMessagesOnConnection(connectionToServer, messages, nMaxMessagesReceivedPerFrame);
-
+        Global.PrintDebug("Checking for msgs from server");
         //For each message, send it off to further processing
         for (int i = 0; i < numMessages; i++)
         {
@@ -374,25 +376,15 @@ public partial class NetworkInterface : Node
 
     public void BroadcastMessage(IMessage message, ushort lane, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
     {
-        foreach (HSteamNetConnection c in connectionsToClients.Values)
+        foreach (HSteamNetConnection c in connectionsToClients)
         {
             SendSteamMessage(c,message, lane, sendFlags);
         }
     }
 
-    public void BroadcastMessageWithException(ulong exception, IMessage message, ushort lane, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
-    {
-        foreach (KeyValuePair<ulong,HSteamNetConnection> kv in connectionsToClients)
-        {
-            if (kv.Key == exception)
-            { continue; }
-            SendSteamMessage(kv.Value, message, lane, sendFlags);
-        }
-    }
-
     public void BroadcastMessageWithException(HSteamNetConnection exception, IMessage message, ushort lane, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
     {
-        foreach (HSteamNetConnection c in connectionsToClients.Values)
+        foreach (HSteamNetConnection c in connectionsToClients)
         {
             if (c.Equals(exception)) { continue; }
             SendSteamMessage(c, message, lane, sendFlags);
