@@ -20,7 +20,7 @@ public partial class ClientNetworkInterface : Node
     public bool isConnected = false;
 
     //Networking Vars
-    public HSteamNetConnection connectionToServer = new HSteamNetConnection();
+    public HSteamNetConnection connectionToServer;
 
     public List<ulong> peers = new List<ulong>();
 
@@ -113,6 +113,11 @@ public partial class ClientNetworkInterface : Node
 
         //Collect up to nMaxMessages that are waiting in the queue on the connection to the server, and load them up into our preallocated message array
         int numMessages = ReceiveMessagesOnConnection(connectionToServer, messages, nMaxMessagesReceivedPerFrame);
+        if (numMessages >0)
+        {
+            Global.PrintDebug("Hep,I got a message from the server.");
+        }
+
         if (numMessages == -1)
         {
             Global.PrintCriticalError("INVALID CONNECTION HANDLE TO SERVER");
@@ -173,7 +178,7 @@ public partial class ClientNetworkInterface : Node
         GetIdentity(out SteamNetworkingIdentity id);
         chatPacket.Sender = id.GetSteamID64();
         chatPacket.Text = message;
-        SendSteamMessage(connectionToServer, chatPacket, (ushort)NetworkUtils.NetworkingLanes.LANE_CHAT, NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle);
+        SendSteamMessage(connectionToServer, chatPacket, (ushort)NetworkUtils.NetworkingLanes.LANE_CHAT, false, NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle);
     }
 
 

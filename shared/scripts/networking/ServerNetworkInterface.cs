@@ -126,7 +126,7 @@ public partial class ServerNetworkInterface : Node
                 _handshakePacket.SentTimestamp = Time.GetUnixTimeFromSystem();
                 _handshakePacket.Sender = NetworkUtils.GetSelfSteamID();
                 //_handshakePacket.Peers.AddRange(connectionsToClients.Keys);
-                SendSteamMessage(param.m_hConn, _handshakePacket, (ushort)NetworkUtils.NetworkingLanes.LANE_HANDSHAKE, NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle);
+                SendSteamMessage(param.m_hConn, _handshakePacket, (ushort)NetworkUtils.NetworkingLanes.LANE_HANDSHAKE, true, NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle);
 
                 connectionsToClients.Add(param.m_hConn);
 
@@ -226,7 +226,7 @@ public partial class ServerNetworkInterface : Node
     {
         foreach (HSteamNetConnection c in connectionsToClients)
         {
-            SendSteamMessage(c, message, lane, sendFlags);
+            SendSteamMessage(c, message, lane, true, sendFlags);
         }
     }
 
@@ -235,7 +235,7 @@ public partial class ServerNetworkInterface : Node
         foreach (HSteamNetConnection c in connectionsToClients)
         {
             if (c.Equals(exception)) { continue; }
-            SendSteamMessage(c, message, lane, sendFlags);
+            SendSteamMessage(c, message, lane, true, sendFlags);
         }
     }
 

@@ -37,6 +37,7 @@ public static class NetworkUtils
     /// <param name="connection"></param>
     public static void ConfigureConnectionLanes(HSteamNetConnection connection)
     {
+
         int laneCount = Enum.GetNames(typeof(NetworkingLanes)).Length;
         int[] lanePriorities = new int[laneCount];
         ushort[] laneWeights = new ushort[laneCount];
@@ -103,9 +104,17 @@ public static class NetworkUtils
     }
 
 
-    public static bool SendSteamMessage(HSteamNetConnection sendTo, IMessage message, ushort lane, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
+    public static bool SendSteamMessage(HSteamNetConnection sendTo, IMessage message, ushort lane, bool asServer = false, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
     {
-        Global.PrintDebug("Sending SteamMessage to client: " + sendTo.ToString(), true);
+        if (asServer)
+        {
+            Global.PrintDebug("Sending SteamMessage to client: " + sendTo.ToString(), true);
+        }
+        else
+        {
+            Global.PrintDebug("Sending SteamMessage to server");
+        }
+
         var msgPtrsToSend = new IntPtr[] { IntPtr.Zero };
         var ptr = IntPtr.Zero;
         try
@@ -120,7 +129,7 @@ public static class NetworkUtils
             Marshal.Copy(data, 0, msg.m_pData, data.Length);
 
             msg.m_nFlags = sendFlags;
-            msg.m_idxLane = lane;
+            msg.m_idxLane = 2;
             msg.m_conn = sendTo;
             // Copies the bytes of the managed message back into the native structure located at ptr
             Marshal.StructureToPtr(msg, ptr, false);
