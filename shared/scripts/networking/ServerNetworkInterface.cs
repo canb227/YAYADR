@@ -1,4 +1,5 @@
 ﻿using static Steamworks.SteamNetworkingSockets;
+using static NetworkUtils;
 using Godot;
 using Google.Protobuf;
 using Steamworks;
@@ -173,6 +174,7 @@ public partial class ServerNetworkInterface : Node
 
     public override void _Process(double delta)
     {
+        if (!isConnected) { return; }
         foreach (HSteamNetConnection connection in connectionsToClients)
         {
             //Create and allocate memory for an array of pointers
@@ -219,11 +221,12 @@ public partial class ServerNetworkInterface : Node
         }
     }
 
+
     public void BroadcastMessage(IMessage message, ushort lane, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
     {
         foreach (HSteamNetConnection c in connectionsToClients)
         {
-            SendSteamMessage(c,message, lane, sendFlags);
+            SendSteamMessage(c, message, lane, sendFlags);
         }
     }
 
@@ -234,44 +237,6 @@ public partial class ServerNetworkInterface : Node
             if (c.Equals(exception)) { continue; }
             SendSteamMessage(c, message, lane, sendFlags);
         }
-    }
-
-    public bool SendSteamMessage(HSteamNetConnection sendTo, IMessage message, ushort lane, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
-    {
-        Global.PrintDebug("Sending SteamMessage to client: " + sendTo.ToString(),true);
-        var msgPtrsToSend = new IntPtr[] { IntPtr.Zero };
-        var ptr = IntPtr.Zero;
-        try
-        {
-            byte[] data = message.ToByteArray();
-            ptr = SteamNetworkingUtils.AllocateMessage(data.Length);
-
-            var msg = SteamNetworkingMessage_t.FromIntPtr(ptr);
-
-            // Unfortunately, this allocates a managed SteamNetworkingMessage_t,
-            // but the native message currently can't be edited via ptr, even with unsafe code
-            Marshal.Copy(data, 0, msg.m_pData, data.Length);
-
-            msg.m_nFlags = sendFlags;
-            msg.m_idxLane = lane;
-            msg.m_conn = sendTo;
-            // Copies the bytes of the managed message back into the native structure located at ptr
-            Marshal.StructureToPtr(msg, ptr, false);
-
-            msgPtrsToSend[0] = ptr;
-        }
-        catch (Exception e)
-        {
-            // Callers only have responsibility to release the message until it's passed to SendMessages
-            SteamNetworkingMessage_t.Release(ptr);
-            return false;
-        }
-
-        var msgSendResult = new long[] { default };
-        SteamNetworkingSockets.SendMessages(1, msgPtrsToSend, msgSendResult);
-        EResult result = msgSendResult[0] >= 1 ? EResult.k_EResultOK : (EResult)(-msgSendResult[0]);
-
-        return result == EResult.k_EResultOK;
     }
 
 

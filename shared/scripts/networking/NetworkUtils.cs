@@ -1,4 +1,5 @@
 ﻿
+using Google.Protobuf;
 using Steamworks;
 using System;
 using System.Runtime.InteropServices;
@@ -24,7 +25,6 @@ public static class NetworkUtils
     public enum NetworkingLanes : ushort
     {
         LANE_STATE = 0,
-
         LANE_DIAGNOSTIC = 1,
         LANE_CHAT = 2,
         LANE_ADMIN = 3,
@@ -103,5 +103,42 @@ public static class NetworkUtils
     }
 
 
+    public static bool SendSteamMessage(HSteamNetConnection sendTo, IMessage message, ushort lane, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
+    {
+        Global.PrintDebug("Sending SteamMessage to client: " + sendTo.ToString(), true);
+        var msgPtrsToSend = new IntPtr[] { IntPtr.Zero };
+        var ptr = IntPtr.Zero;
+        try
+        {
+            byte[] data = message.ToByteArray();
+            ptr = SteamNetworkingUtils.AllocateMessage(data.Length);
+
+            var msg = SteamNetworkingMessage_t.FromIntPtr(ptr);
+
+            // Unfortunately, this allocates a managed SteamNetworkingMessage_t,
+            // but the native message currently can't be edited via ptr, even with unsafe code
+            Marshal.Copy(data, 0, msg.m_pData, data.Length);
+
+            msg.m_nFlags = sendFlags;
+            msg.m_idxLane = lane;
+            msg.m_conn = sendTo;
+            // Copies the bytes of the managed message back into the native structure located at ptr
+            Marshal.StructureToPtr(msg, ptr, false);
+
+            msgPtrsToSend[0] = ptr;
+        }
+        catch (Exception e)
+        {
+            // Callers only have responsibility to release the message until it's passed to SendMessages
+            SteamNetworkingMessage_t.Release(ptr);
+            return false;
+        }
+
+        var msgSendResult = new long[] { default };
+        SteamNetworkingSockets.SendMessages(1, msgPtrsToSend, msgSendResult);
+        EResult result = msgSendResult[0] >= 1 ? EResult.k_EResultOK : (EResult)(-msgSendResult[0]);
+
+        return result == EResult.k_EResultOK;
+    }
 } 
 

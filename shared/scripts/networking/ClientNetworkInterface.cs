@@ -1,4 +1,5 @@
 ﻿using static Steamworks.SteamNetworkingSockets;
+using static NetworkUtils;
 using Godot;
 using Google.Protobuf;
 using Steamworks;
@@ -91,39 +92,10 @@ public partial class ClientNetworkInterface : Node
 
     private void onSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t param)
     {
-        ulong cID = param.m_info.m_identityRemote.GetSteamID64();
-        Global.PrintDebug("Connection status with server has changed to: " + param.m_info.m_eState);
-        switch (param.m_info.m_eState)
+        Global.PrintDebug("Client - connection status change. New status: " + param.m_info.m_eState);
+        if (param.m_info.m_eState.Equals(ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected))
         {
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_None:
-                break;
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connecting:
-                break;
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_FindingRoute:
-                break;
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected:
-                /*
-                SteamFriends.SetRichPresence("connect", cID.ToString());
-                isJoinable = true;
-                isConnected = true;
-                JoinedServerEvent.Invoke(cID);
-                Global.PrintDebug("Connected to remote server. Host Steam ID: " + cID);
-                */
-                break;
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ClosedByPeer:
-                break;
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_ProblemDetectedLocally:
-                break;
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_FinWait:
-                break;
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Linger:
-                break;
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Dead:
-                break;
-            case ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState__Force32Bit:
-                break;
-            default:
-                break;
+            isConnected = true;
         }
     }
 
@@ -194,51 +166,6 @@ public partial class ClientNetworkInterface : Node
         }
         }
 
-    /// <summary>
-    /// Sends a message using the SteamNetworkingSockets library. In theory, this should be agnostic to steam vs non-steam networking.
-    /// </summary>
-    /// <param name="type"></param>
-    /// <param name="target"></param>
-    /// <param name="data"></param>
-    /// <param name="sendFlags"></param>
-    /// <returns></returns>
-    public bool SendSteamMessageToServer(IMessage message, ushort lane, int sendFlags = NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle)
-    {
-        Global.PrintDebug("Sending SteamMessage to server.");
-        var msgPtrsToSend = new IntPtr[] { IntPtr.Zero };
-        var ptr = IntPtr.Zero;
-        try
-        {
-            byte[] data = message.ToByteArray();
-            ptr = SteamNetworkingUtils.AllocateMessage(data.Length);
-
-            var msg = SteamNetworkingMessage_t.FromIntPtr(ptr);
-
-            // Unfortunately, this allocates a managed SteamNetworkingMessage_t,
-            // but the native message currently can't be edited via ptr, even with unsafe code
-            Marshal.Copy(data, 0, msg.m_pData, data.Length);
-
-            msg.m_nFlags = sendFlags;
-            msg.m_idxLane = lane;
-            msg.m_conn = connectionToServer;
-            // Copies the bytes of the managed message back into the native structure located at ptr
-            Marshal.StructureToPtr(msg, ptr, false);
-
-            msgPtrsToSend[0] = ptr;
-        }
-        catch (Exception e)
-        {
-            // Callers only have responsibility to release the message until it's passed to SendMessages
-            SteamNetworkingMessage_t.Release(ptr);
-            return false;
-        }
-
-        var msgSendResult = new long[] { default };
-        SteamNetworkingSockets.SendMessages(1, msgPtrsToSend, msgSendResult);
-        EResult result = msgSendResult[0] >= 1 ? EResult.k_EResultOK : (EResult)(-msgSendResult[0]);
-
-        return result == EResult.k_EResultOK;
-    }
 
     public void SendChatMessage(string message)
     {
@@ -246,7 +173,7 @@ public partial class ClientNetworkInterface : Node
         GetIdentity(out SteamNetworkingIdentity id);
         chatPacket.Sender = id.GetSteamID64();
         chatPacket.Text = message;
-        SendSteamMessageToServer(chatPacket, (ushort)NetworkUtils.NetworkingLanes.LANE_CHAT, NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle);
+        SendSteamMessage(connectionToServer, chatPacket, (ushort)NetworkUtils.NetworkingLanes.LANE_CHAT, NetworkUtils.k_nSteamNetworkingSend_ReliableNoNagle);
     }
 
 

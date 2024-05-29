@@ -69,6 +69,8 @@ public partial class Global : Node
         NetworkUtils.ConfigureConnectionLanes(serverConnectionToLocalClient);
         clientNetworkInterface.connectionToServer = clientConnectionToLocalServer;
         serverNetworkInterface.connectionsToClients.Add(serverConnectionToLocalClient);
+        clientNetworkInterface.isConnected = true;
+
         Global.PrintDebug("Added local client to connection list.", true);
         Global.PrintDebug("Set local server as remote server");
     }

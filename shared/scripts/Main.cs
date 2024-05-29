@@ -98,6 +98,7 @@ public partial class Main : Node
 
     private void onChatMessage(ChatPacket chatPacket)
     {
+        Global.PrintDebug("Chat Message recevied");
 		Label msg = new Label();
 		msg.Text = SteamFriends.GetFriendPersonaName((CSteamID)chatPacket.Sender) + " says: " + chatPacket.Text;
 		GetNode<VBoxContainer>("chat/chatoutput/chatoutput/chatoutput").AddChild(msg);
